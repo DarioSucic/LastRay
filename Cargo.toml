@@ -1,0 +1,17 @@
+[package]
+name = "lastone"
+version = "0.1.0"
+authors = ["Dario Sučić <dariosucic@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ultraviolet = "*"
+write_png = { path = "./lib/write_png" }
+rand = "*"
+rayon = "*"
+tobj = "*"
+
+[profile.release]
+debug = true
