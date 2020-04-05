@@ -1,5 +1,6 @@
 use crate::*;
 
+#[derive(Debug)]
 pub struct Metal {
     pub albedo: Vec3,
     pub fuzziness: f32,

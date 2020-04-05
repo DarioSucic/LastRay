@@ -1,5 +1,5 @@
 use crate::*;
-
+#[derive(Debug)]
 pub struct Lambertian {
     pub albedo: Vec3,
 }

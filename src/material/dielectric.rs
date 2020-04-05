@@ -1,5 +1,5 @@
 use crate::*;
-
+#[derive(Debug)]
 pub struct Dielectric {
     pub albedo: Vec3,
     pub fuzziness: f32,

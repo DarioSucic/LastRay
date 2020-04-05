@@ -37,94 +37,29 @@ pub fn uniform_sample_sphere(samples: &(f32, f32)) -> Vec3 {
     Vec3::new(pcos * r, psin * r, z)
 }
 
-struct Sphere<'a> {
-    pos: Vec3,
-    radius: f32,
-    material: &'a Box<dyn Material + Send + Sync>,
-}
-
-impl<'a> Intersectable for Sphere<'a> {
-    fn intersect(&self, ray: &Ray, tmin: f32, tmax: f32) -> Option<Hit> {
-        let oc = ray.origin - self.pos;
-
-        let a = ray.direction.dot(ray.direction);
-        let b = oc.dot(ray.direction);
-        let c = oc.dot(oc) - self.radius * self.radius;
-
-        let discriminant = b * b - a * c;
-
-        if discriminant < 0.0 {
-            return None;
-        }
-
-        let discriminant_root = discriminant.sqrt();
-
-        let t = (-b - discriminant_root) / a;
-        if t < tmax && t > tmin {
-            let point = ray.at_distance(t);
-            let out_normal = (point - self.pos) / self.radius;
-
-            let front_face = ray.direction.dot(out_normal) < 0.0;
-            let normal = if front_face { out_normal } else { -out_normal };
-
-            return Some(Hit {
-                point,
-                normal,
-                t,
-                front_face,
-                material: self.material,
-            });
-        }
-
-        let t = (-b + discriminant_root) / a;
-        if t < tmax && t > tmin {
-            let point = ray.at_distance(t);
-            let out_normal = (point - self.pos) / self.radius;
-
-            let front_face = ray.direction.dot(out_normal) < 0.0;
-            let normal = if front_face { out_normal } else { -out_normal };
-
-            return Some(Hit {
-                point,
-                normal,
-                t,
-                front_face,
-                material: self.material,
-            });
-        }
-
-        None
-    }
-}
-
 fn ray_color<T: Intersectable>(
     ray: &Ray,
     accel: &Accel<T>,
     rng: &mut ThreadRng,
     depth: usize,
 ) -> Vec3 {
-    if depth == 33 {
-        return Vec3::zero();
-    }
-
     if let Some(hit) = accel.intersect(ray, 1e-2, INF) {
         if let Some((attenuation, scattered)) = hit.material.scatter(ray, &hit, rng) {
-            attenuation * ray_color(&scattered, accel, rng, depth + 1)
-        } else {
-            Vec3::zero()
+            if depth == 25 {
+                return attenuation;
+            }
+            return attenuation * ray_color(&scattered, accel, rng, depth + 1);
         }
-    } else {
-        let unit_dir = ray.direction.normalized();
-        let t = 0.5 * (unit_dir.y + 1.0);
-        (1.0 - t) * Vec3::one() + t * Vec3::new(0.5, 0.7, 1.0)
     }
+
+    Vec3::one()
 }
 
 fn main() -> io::Result<()> {
-    const RES: (usize, usize) = (1080, 1080);
+    const RES: (usize, usize) = (512, 512);
     let (width, height) = RES;
 
-    const SAMPLES_PER_PIXEL: usize = 128;
+    const SAMPLES_PER_PIXEL: usize = 2048;
 
     // Image buffer
     let mut buf = vec![0.0; width * height * 3];
@@ -134,12 +69,12 @@ fn main() -> io::Result<()> {
 
     // Setup Camera
     let aspect = width as f32 / height as f32;
-    let look_from = Vec3::new(0.0, 0.67, 5.0);
-    let look_at = Vec3::new(0.0, 0.25, 0.00);
+    let look_from = Vec3::new(-0.2, 2.5, 9.5);
+    let look_at = Vec3::new(-0.2, 2.5, 0.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
     let focus_distance = (look_at - look_from).mag();
-    let aperture = 0.15;
-    let fov = 35.0;
+    let aperture = 0.0;
+    let fov = 30.0;
 
     let camera = Camera::new(
         look_from,
@@ -151,72 +86,10 @@ fn main() -> io::Result<()> {
         aperture,
     );
 
-    // Setup Materials
-    let materials: Vec<Box<dyn Material + Send + Sync>> = vec![
-        Box::new(Lambertian {
-            albedo: Vec3::broadcast(0.2),
-        }),
-        Box::new(Metal {
-            albedo: Vec3::broadcast(0.9),
-            fuzziness: 0.1,
-        }),
-        Box::new(Lambertian {
-            albedo: Vec3::new(1.0, 0.1, 0.1),
-        }),
-        Box::new(Dielectric {
-            albedo: Vec3::new(0.95, 0.95, 1.0),
-            fuzziness: 0.0,
-            refractive_index: 1.52,
-        }),
-    ];
+    let model = Model::load(Vec3::zero(), "res/cornell-box.obj");
 
-    // Setup Objects
     let accel = Accel {
-        objects: vec![
-            Sphere {
-                pos: Vec3::new(0.0, -500.5, 0.0),
-                radius: 500.0,
-                material: &materials[0],
-            },
-            // Shiny metal right
-            Sphere {
-                pos: Vec3::new(0.75, 0.0, 0.0),
-                radius: 0.5,
-                material: &materials[3],
-            },
-            Sphere {
-                pos: Vec3::new(0.75, 0.0, -5.0),
-                radius: 0.5,
-                material: &materials[3],
-            },
-            Sphere {
-                pos: Vec3::new(0.75, 0.0, -10.0),
-                radius: 0.5,
-                material: &materials[3],
-            },
-            // Matte left
-            Sphere {
-                pos: Vec3::new(-0.75, 0.0, 0.0),
-                radius: 0.5,
-                material: &materials[2],
-            },
-            Sphere {
-                pos: Vec3::new(-0.75, 0.0, -5.0),
-                radius: 0.5,
-                material: &materials[2],
-            },
-            Sphere {
-                pos: Vec3::new(-0.75, 0.0, -10.0),
-                radius: 0.5,
-                material: &materials[2],
-            },
-            // Glass center
-            Sphere {
-                pos: Vec3::new(0.0, 2.0 - 0.67, -20.0),
-                radius: 2.0,
-                material: &materials[1],
-            },
-        ],
+        objects: vec![model],
     };
 
     buf.par_chunks_mut(3 * width)
@@ -235,7 +108,12 @@ fn main() -> io::Result<()> {
                     let u = u + dx / width as f32;
                     let v = v + dy / height as f32;
 
-                    let ray = camera.get_ray(&mut rng, u, v);
+                    // println!("(u, v): {:?}", (u, v));
+                    let mut ray = camera.get_ray(&mut rng, u, v);
+                    ray.direction.normalize();
+
+                    // println!("RAY: {:?}", ray);
+
                     color += ray_color(&ray, &accel, &mut rng, 0);
                 }
 
