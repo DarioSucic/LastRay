@@ -26,5 +26,7 @@ cargo run --release
 - [ ] More advanced materials
 
 ### Example Images
-<img src="https://raw.githubusercontent.com/DarioSucic/LastRay/master/out.png" width="320" height="320">
-<img src="https://raw.githubusercontent.com/DarioSucic/LastRay/master/spheres.png" width="320" height="320">
+<div>
+  <img src="https://raw.githubusercontent.com/DarioSucic/LastRay/master/out.png" width="320" height="320">
+  <img src="https://raw.githubusercontent.com/DarioSucic/LastRay/master/spheres.png" width="320" height="320">
+</div>
