@@ -14,14 +14,15 @@ cargo run --release
 - [x] Add basic materials (Diffuse, Metal, Dielectric)
 - [x] Support Multi-threaded rendering
 - [x] Support triangle geometry
-- [ ] Add acceleration structure (BVH)
 - [x] Add loading from basic file formats (.obj, .mtl, etc.)
+- [x] Vectorize intersection testing (targeting SSSE3 or AVX2)
+- [ ] Add acceleration structure (BVH)
+- [ ] Support light sources
 - [ ] Create or implement existing scene format
 - [ ] Add texture support
 
-### Long term goals:
+### Longer term goals:
 - [ ] Add animation support
-- [x] Vectorize intersection testing (targeting SSSE3 or AVX2)
 - [ ] Implement more physically based rendering features
 - [ ] More advanced materials
 
