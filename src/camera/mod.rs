@@ -1,4 +1,4 @@
-use crate::geometry::*;
+use crate::*;
 use std::f32::consts::PI;
 
 use rand::{self, prelude::*};
@@ -15,6 +15,20 @@ pub struct Camera {
 }
 
 impl Camera {
+    pub fn with_config_aspect(
+        look_from: Vec3,
+        look_at: Vec3,
+        vup: Vec3,
+        vfov: f32,
+        config: &Config,
+        focus_dist: f32,
+        aperture: f32,
+    ) -> Camera {
+        let (width, height) = config.resolution;
+        let aspect = width as f32 / height as f32;
+        Camera::new(look_from, look_at, vup, vfov, aspect, focus_dist, aperture)
+    }
+
     pub fn new(
         look_from: Vec3,
         look_at: Vec3,
@@ -60,7 +74,7 @@ impl Camera {
         let offset = self.u * rd.x + self.v * rd.y;
 
         let origin = self.origin + offset;
-        let mut direction =
+        let direction =
             self.lower_left + self.horizontal * s + self.vertical * t - self.origin - offset;
 
         Ray { origin, direction }

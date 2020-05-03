@@ -8,10 +8,11 @@ edition = "2018"
 
 [dependencies]
 ultraviolet = "*"
+packed_simd = "*"
 write_png = { path = "./lib/write_png" }
 rand = "*"
 rayon = "*"
-tobj = "*"
+tobj = { version = "*", features = ["log"]}
 
 [profile.release]
 debug = true

@@ -2,7 +2,7 @@ use crate::*;
 pub struct Sphere<'a> {
     pub pos: Vec3,
     pub radius: f32,
-    pub material: &'a Box<dyn Material + Send + Sync>,
+    pub material: &'a MaterialType,
 }
 
 impl<'a> Intersectable for Sphere<'a> {

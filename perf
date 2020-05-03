@@ -1,0 +1,6 @@
+running 5 tests
+test bench_cornell_box                   ... bench:  50,093,150 ns/iter (+/- 1,691,483)
+test bench_slow_intersection_300k        ... bench:     760,872 ns/iter (+/- 51,459)
+test bench_slow_intersection_512         ... bench:       1,448 ns/iter (+/- 25)
+test bench_slow_intersection_8192        ... bench:      19,998 ns/iter (+/- 478)
+test bench_slow_intersection_cornell_box ... bench:         308 ns/iter (+/- 7)
