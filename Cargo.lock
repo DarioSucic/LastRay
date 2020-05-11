@@ -141,6 +141,7 @@ dependencies = [
 name = "lastone"
 version = "0.1.0"
 dependencies = [
+ "packed_simd",
  "rand",
  "rayon",
  "tobj",
@@ -159,6 +160,15 @@ name = "libc"
 version = "0.2.68"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dea0c0405123bba743ee3f91f49b1c7cfb684eef0da0a50110f758ccf24cdff0"
+
+[[package]]
+name = "log"
+version = "0.4.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "14b6052be84e6b71ab17edffc2eeabf5c2c3ae1fdb464aae35ac50c67a44e1f7"
+dependencies = [
+ "cfg-if",
+]
 
 [[package]]
 name = "maybe-uninit"
@@ -183,6 +193,15 @@ checksum = "46203554f085ff89c235cd12f7075f3233af9b11ed7c9e16dfe2560d03313ce6"
 dependencies = [
  "hermit-abi",
  "libc",
+]
+
+[[package]]
+name = "packed_simd"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a85ea9fc0d4ac0deb6fe7911d38786b32fc11119afd9e9d38b84ff691ce64220"
+dependencies = [
+ "cfg-if",
 ]
 
 [[package]]
@@ -279,6 +298,9 @@ name = "tobj"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2b9d0bafde95a2f8f50dd3c10bc127b462efa8c3c0b60dfa276b7e032100e21d"
+dependencies = [
+ "log",
+]
 
 [[package]]
 name = "ultraviolet"

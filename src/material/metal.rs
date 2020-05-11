@@ -17,9 +17,12 @@ impl Material for Metal {
             return None;
         }
 
+        let inv_direction = Vec3::one() / reflected;
+
         let scattered = Ray {
             origin: hit.point,
             direction: reflected,
+            inv_direction
         };
 
         let attenuation = self.albedo;

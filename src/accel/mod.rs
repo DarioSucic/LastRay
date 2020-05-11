@@ -2,17 +2,21 @@
 // [0]: https://github.com/svenstaro/bvh
 // [1]: https://github.com/bryanmcnett/aabo
 
-use crate::geometry::*;
+#[allow(unused)]
+use crate::*;
 
-pub struct Accel<T: Intersectable> {
-    pub objects: Vec<T>,
+mod slow;
+pub use slow::*;
+
+mod bvh;
+pub use bvh::*;
+
+/*
+pub trait Bounded {
+    fn bounds(&self) -> AABB;
 }
 
-impl<T: Intersectable> Intersectable for Accel<T> {
-    fn intersect(&self, ray: &Ray, tmin: f32, tmax: f32) -> Option<Hit> {
-        self.objects
-            .iter()
-            .filter_map(|o| o.intersect(&ray, tmin, tmax))
-            .min_by(|a, b| a.t.partial_cmp(&b.t).unwrap())
-    }
+pub fn hilbert_curve_sort<T: Bounded>(a: &mut [T]) {
+    todo!()
 }
+*/

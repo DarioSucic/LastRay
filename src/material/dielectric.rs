@@ -35,12 +35,14 @@ impl Material for Dielectric {
 
         let reflect_prob = self.shlick(cos_theta, refractive_ratio);
 
-        let direction = if refractive_ratio * sin_theta > 0.999 || rng.gen::<f32>() < reflect_prob {
+        let direction;
+
+        if refractive_ratio * sin_theta > 0.999 || rng.gen::<f32>() < reflect_prob {
             let reflected = unit_dir.reflected(hit.normal);
-            reflected
+            direction = reflected;
         } else {
             let refracted = Dielectric::refract(unit_dir, hit.normal, refractive_ratio);
-            refracted
+            direction = refracted;
         };
 
         let sample = rng.gen::<(f32, f32)>();
@@ -48,9 +50,12 @@ impl Material for Dielectric {
 
         let direction = direction + sphere_sample * self.fuzziness;
 
+        let inv_direction = Vec3::one() / direction;
+
         let scattered = Ray {
             origin: hit.point,
             direction: direction,
+            inv_direction
         };
 
         let attenuation = self.albedo;
