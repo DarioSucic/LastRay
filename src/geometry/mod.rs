@@ -1,7 +1,6 @@
 use crate::material::*;
 
 pub use ultraviolet::{
-    geometry::Ray,
     vec::{Vec3, Wec3},
     wide::{const_f32_as_f32x4, f32x4, ConstUnionHack_f32x4},
 };
@@ -24,8 +23,82 @@ pub struct Hit<'a> {
     pub material: &'a MaterialType,
 }
 
+pub struct Ray {
+    pub origin: Vec3,
+    pub direction: Vec3,
+    pub inv_direction: Vec3,
+}
+
+impl Ray {
+    pub fn at(&self, t: f32) -> Vec3 {
+        self.origin + t * self.direction
+    }
+}
+
 pub trait Intersectable {
-    fn intersect(&self, ray: &Ray, tmin: f32, tmax: f32) -> Option<Hit>;
+    fn intersect(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<Hit>;
+}
+
+pub trait Bounded: Intersectable {
+    fn bounds(&self) -> AABB;
+}
+pub struct AABB {
+    pub mini: Vec3,
+    pub maxi: Vec3,
+}
+
+impl AABB {
+    pub fn degenerate() -> AABB {
+        AABB {
+            mini: Vec3::zero(),
+            maxi: Vec3::zero(),
+        }
+    }
+
+    pub fn surface_area(&self) -> f32 {
+        let delta = self.maxi - self.mini;
+        let half = delta.x * delta.y + delta.x * delta.z + delta.z * delta.y;
+        half + half
+    }
+
+    pub fn union(self, other: AABB) -> AABB {
+        AABB {
+            mini: self.mini.min_by_component(other.mini),
+            maxi: self.maxi.max_by_component(other.maxi)
+        }
+    }
+
+    pub fn intersect(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<f32> {
+        for i in 0..3 {
+            if ray.direction[i] == 0.0
+                && (ray.origin[i] < self.mini[i] || ray.origin[i] > self.maxi[i])
+            {
+                return None;
+            }
+        }
+
+        let mut t1: Vec3 = (self.mini - ray.origin) * ray.inv_direction;
+        let mut t2: Vec3 = (self.maxi - ray.origin) * ray.inv_direction;
+
+        use std::mem;
+        for i in 0..3 {
+            if t1[i] > t2[i] {
+                mem::swap(&mut t1[i], &mut t2[i]);
+            }
+        }
+
+        let tend = t2.component_min();
+        if tend < t_min {
+            return None;
+        }
+
+        let tstart = t1.component_max();
+        if tstart > tend {
+            return None;
+        }
+
+        Some(tstart)
+    }
 }
 
 pub fn wec3s_from_flat(flat: &[f32], chunk_size: usize, missing_fill: f32) -> Vec<Wec3x8> {

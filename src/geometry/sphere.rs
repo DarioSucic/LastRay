@@ -23,7 +23,7 @@ impl<'a> Intersectable for Sphere<'a> {
 
         let t = (-b - discriminant_root) / a;
         if t < tmax && t > tmin {
-            let point = ray.at_distance(t);
+            let point = ray.at(t);
             let out_normal = (point - self.pos) / self.radius;
 
             let front_face = ray.direction.dot(out_normal) < 0.0;
@@ -40,7 +40,7 @@ impl<'a> Intersectable for Sphere<'a> {
 
         let t = (-b + discriminant_root) / a;
         if t < tmax && t > tmin {
-            let point = ray.at_distance(t);
+            let point = ray.at(t);
             let out_normal = (point - self.pos) / self.radius;
 
             let front_face = ray.direction.dot(out_normal) < 0.0;

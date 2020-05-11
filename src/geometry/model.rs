@@ -32,6 +32,14 @@ impl Intersectable for Model {
     }
 }
 
+impl Bounded for Model {
+    fn bounds(&self) -> AABB {
+        self.subs
+            .iter()
+            .fold(AABB::degenerate(), |acc, x| acc.union(x.bounds()))
+    }
+}
+
 pub struct SubModel {
     pub positions: Vec<Wec3x8>,
     pub normals: Vec<Wec3x8>,
@@ -88,6 +96,18 @@ impl SubModel {
 }
 
 impl SubModel {
+    fn bounds(&self) -> AABB {
+        assert!(self.positions.len() > 0);
+        AABB {
+            mini: self.positions.iter().fold(Vec3::broadcast(INF), |acc, x| {
+                acc.min_by_component(x.componentwise_min())
+            }),
+            maxi: self.positions.iter().fold(Vec3::broadcast(-INF), |acc, x| {
+                acc.max_by_component(x.componentwise_max())
+            }),
+        }
+    }
+
     fn intersect<'a>(&'a self, parent: &'a Model, ray: &Ray, tmin: f32, tmax: f32) -> Option<Hit> {
         let origin = Wec3x8::splat(ray.origin);
         let direction = Wec3x8::splat(ray.direction);

@@ -229,7 +229,8 @@ fn bench_slow_intersection_cornell_box(b: &mut Bencher) {
 
     let origin = Vec3::zero();
     let direction = Vec3::new(0.0, 1.0, -1.0).normalized();
-    let ray = Ray { origin, direction };
+    let inv_direction = Vec3::one() / direction;
+    let ray = Ray { origin, direction, inv_direction };
 
     b.iter(|| {
         match scene.accel.intersect(&ray, 0.0, INF) {
@@ -247,7 +248,8 @@ fn bench_slow_intersection_audi_r8(b: &mut Bencher) {
 
     let origin = Vec3::zero();
     let direction = Vec3::new(0.0, 1.0, -1.0).normalized();
-    let ray = Ray { origin, direction };
+    let inv_direction = Vec3::one() / direction;
+    let ray = Ray { origin, direction, inv_direction };
 
     b.iter(|| {
         match scene.accel.intersect(&ray, 0.0, INF) {
@@ -265,7 +267,8 @@ fn bench_slow_intersection_512(b: &mut Bencher) {
 
     let origin = Vec3::zero();
     let direction = Vec3::new(0.0, 1.0, -1.0).normalized();
-    let ray = Ray { origin, direction };
+    let inv_direction = Vec3::one() / direction;
+    let ray = Ray { origin, direction, inv_direction };
 
     b.iter(|| {
         match scene.accel.intersect(&ray, 0.0, INF) {

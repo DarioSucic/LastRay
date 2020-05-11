@@ -50,9 +50,12 @@ impl Material for Dielectric {
 
         let direction = direction + sphere_sample * self.fuzziness;
 
+        let inv_direction = Vec3::one() / direction;
+
         let scattered = Ray {
             origin: hit.point,
             direction: direction,
+            inv_direction
         };
 
         let attenuation = self.albedo;

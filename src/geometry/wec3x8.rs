@@ -72,6 +72,24 @@ impl Wec3x8 {
             merge_packed(mask, tru.z, fls.z),
         )
     }
+
+    #[inline]
+    pub fn componentwise_min(&self) -> Vec3 {
+        Vec3::new(
+            self.x.min_element(),
+            self.y.min_element(),
+            self.z.min_element()
+        )
+    }
+
+    #[inline]
+    pub fn componentwise_max(&self) -> Vec3 {
+        Vec3::new(
+            self.x.max_element(),
+            self.y.max_element(),
+            self.z.max_element()
+        )
+    }
 }
 
 impl Add for Wec3x8 {

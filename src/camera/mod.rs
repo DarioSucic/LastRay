@@ -77,6 +77,8 @@ impl Camera {
         let direction =
             self.lower_left + self.horizontal * s + self.vertical * t - self.origin - offset;
 
-        Ray { origin, direction }
+        let inv_direction = Vec3::one() / direction;
+
+        Ray { origin, direction, inv_direction }
     }
 }
