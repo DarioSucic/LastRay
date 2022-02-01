@@ -1,4 +1,5 @@
-pub use packed_simd::{f32x8, m32x8};
+use std::simd::{f32x8, mask32x8};
+
 use std::arch::x86_64::*;
 use std::hint::unreachable_unchecked;
 use std::mem;
@@ -8,7 +9,7 @@ use crate::*;
 
 // Tiny AVX wide vector implementation for intersection testing
 
-pub fn merge_packed(mask: m32x8, a: f32x8, b: f32x8) -> f32x8 {
+pub fn merge_packed(mask: mask32x8, a: f32x8, b: f32x8) -> f32x8 {
     unsafe {
         mem::transmute(_mm256_blendv_ps(
             mem::transmute(b),
@@ -52,20 +53,20 @@ impl Wec3x8 {
 
     #[inline]
     pub fn dot(&self, rhs: Wec3x8) -> f32x8 {
-        self.x.mul_add(rhs.x, self.y.mul_add(rhs.y, self.z * rhs.z))
+        self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
 
     #[inline]
     pub fn cross(&self, rhs: Wec3x8) -> Wec3x8 {
         Wec3x8::new(
-            self.y.mul_add(rhs.z, -self.z * rhs.y),
-            self.z.mul_add(rhs.x, -self.x * rhs.z),
-            self.x.mul_add(rhs.y, -self.y * rhs.x),
+            self.y * rhs.z - self.z * rhs.y,
+            self.z * rhs.x - self.x * rhs.z,
+            self.x * rhs.y - self.y * rhs.x,
         )
     }
 
     #[inline]
-    pub fn merge(mask: m32x8, tru: Wec3x8, fls: Wec3x8) -> Wec3x8 {
+    pub fn merge(mask: mask32x8, tru: Wec3x8, fls: Wec3x8) -> Wec3x8 {
         Wec3x8::new(
             merge_packed(mask, tru.x, fls.x),
             merge_packed(mask, tru.y, fls.y),
@@ -76,18 +77,18 @@ impl Wec3x8 {
     #[inline]
     pub fn componentwise_min(&self) -> Vec3 {
         Vec3::new(
-            self.x.min_element(),
-            self.y.min_element(),
-            self.z.min_element()
+            self.x.horizontal_min(),
+            self.y.horizontal_min(),
+            self.z.horizontal_min()
         )
     }
 
     #[inline]
     pub fn componentwise_max(&self) -> Vec3 {
         Vec3::new(
-            self.x.max_element(),
-            self.y.max_element(),
-            self.z.max_element()
+            self.x.horizontal_max(),
+            self.y.horizontal_max(),
+            self.z.horizontal_max()
         )
     }
 }

@@ -2,17 +2,19 @@
 name = "lastone"
 version = "0.1.0"
 authors = ["Dario Sučić <dariosucic@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ultraviolet = "*"
-packed_simd = "*"
+ultraviolet = "0.8.1"
 write_png = { path = "./lib/write_png" }
-rand = "*"
-rayon = "*"
-tobj = { version = "*", features = ["log"]}
+
+rand = "0.8.4"
+rand_xoshiro = "0.6.0"
+
+rayon = "1.5.1"
+tobj = { version = "3.2.0", features = ["log"]}
 
 [profile.release]
 debug = true

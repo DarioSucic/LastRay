@@ -22,7 +22,7 @@ impl Dielectric {
 }
 
 impl Material for Dielectric {
-    fn scatter(&self, ray: &Ray, hit: &Hit, rng: &mut ThreadRng) -> Option<(Vec3, Ray)> {
+    fn scatter(&self, ray: &Ray, hit: &Hit, rng: &mut Xoshiro256PlusPlus) -> Option<(Vec3, Ray)> {
         let refractive_ratio = if hit.front_face {
             1.0 / self.refractive_index
         } else {

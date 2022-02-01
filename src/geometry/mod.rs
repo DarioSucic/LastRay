@@ -1,9 +1,8 @@
+use std::simd::f32x8;
+
 use crate::material::*;
 
-pub use ultraviolet::{
-    vec::{Vec3, Wec3},
-    wide::{const_f32_as_f32x4, f32x4, ConstUnionHack_f32x4},
-};
+pub use ultraviolet::vec::{Vec3};
 
 pub use tobj;
 
@@ -122,9 +121,9 @@ pub fn wec3s_from_flat(flat: &[f32], chunk_size: usize, missing_fill: f32) -> Ve
 
         for (block, xx) in x.chunks(chunk_size).enumerate() {
             for i in 0..xx.len() {
-                w[i][0] = w[i][0].replace(block, x[chunk_size * block + i]);
-                w[i][1] = w[i][1].replace(block, y[chunk_size * block + i]);
-                w[i][2] = w[i][2].replace(block, z[chunk_size * block + i]);
+                w[i][0].as_mut_array()[block] = x[chunk_size * block + i];
+                w[i][1].as_mut_array()[block] = y[chunk_size * block + i];
+                w[i][2].as_mut_array()[block] = z[chunk_size * block + i];
             }
         }
 

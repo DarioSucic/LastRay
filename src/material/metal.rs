@@ -7,7 +7,7 @@ pub struct Metal {
 }
 
 impl Material for Metal {
-    fn scatter(&self, ray: &Ray, hit: &Hit, rng: &mut ThreadRng) -> Option<(Vec3, Ray)> {
+    fn scatter(&self, ray: &Ray, hit: &Hit, rng: &mut Xoshiro256PlusPlus) -> Option<(Vec3, Ray)> {
         let sample = rng.gen::<(f32, f32)>();
         let sphere_sample = uniform_sample_sphere(&sample);
 

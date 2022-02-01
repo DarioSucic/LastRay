@@ -63,12 +63,12 @@ impl Camera {
         }
     }
 
-    fn sample_unit_disk(&self, rng: &mut ThreadRng) -> (f32, f32) {
+    fn sample_unit_disk(&self, rng: &mut Xoshiro256PlusPlus) -> (f32, f32) {
         let (a, b) = rng.gen::<(f32, f32)>();
         (a.sin(), b.cos())
     }
 
-    pub fn get_ray(&self, rng: &mut ThreadRng, s: f32, t: f32) -> Ray {
+    pub fn get_ray(&self, rng: &mut Xoshiro256PlusPlus, s: f32, t: f32) -> Ray {
         let (a, b) = self.sample_unit_disk(rng);
         let rd = Vec3::new(a, b, 0.0) * self.lens_radius;
         let offset = self.u * rd.x + self.v * rd.y;

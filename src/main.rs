@@ -1,10 +1,13 @@
 #![feature(test)]
 #![feature(core_intrinsics)]
+#![feature(portable_simd)]
 
 #[allow(unused)]
 use std::intrinsics::{likely, unlikely};
+use std::sync::Mutex;
 
 extern crate test;
+use rand_xoshiro::{Xoshiro256PlusPlus};
 #[allow(unused)]
 use test::{black_box, Bencher};
 
@@ -82,20 +85,17 @@ pub fn uniform_sample_sphere(samples: &(f32, f32)) -> Vec3 {
     Vec3::new(pcos * r, psin * r, z)
 }
 
-fn ray_color<T: Intersectable>(ray: &Ray, accel: &T, rng: &mut ThreadRng, depth: usize) -> Vec3 {
-    if depth < 32 {
-        if let Some(hit) = accel.intersect(ray, 1e-3, INF) {
+fn ray_color<T: Intersectable>(ray: &Ray, accel: &T, rng: &mut Xoshiro256PlusPlus, depth: usize) -> Vec3 {
+    if depth < 1024*16 {
+        if let Some(hit) = accel.intersect(ray, 1e-3, 1e6) {
             match hit.material {
                 MaterialType::Receiver(material) => {
                     if let Some((attenuation, scattered)) = material.scatter(ray, &hit, rng) {
                         return attenuation * ray_color(&scattered, accel, rng, depth + 1);
                     }
                 }
-                MaterialType::Emitter(material) => {
-                    if let Some((attenuation, scattered)) = material.scatter(ray, &hit, rng) {
-                        return attenuation;
-                        // return attenuation * ray_color(&scattered, accel, rng, depth + 1);
-                    }
+                MaterialType::Emitter(_material) => {
+                    return 10.0 * Vec3::one();
                 }
             }
         }
@@ -112,8 +112,19 @@ fn trace_scene<I: Intersectable + Send + Sync>(scene: &Scene<I>, buf: &mut [f32]
     } = scene;
     let (width, height) = config.resolution;
 
+    let base_rng = Mutex::new(Xoshiro256PlusPlus::seed_from_u64(0));
+    
     let f = |(y, line): (usize, &mut [f32])| {
-        let mut rng = rand::thread_rng();
+
+        let mut rng;
+        match base_rng.lock() {
+            Ok(mut base_rng_mg) => {
+                rng = base_rng_mg.clone();
+                base_rng_mg.jump();
+            },
+            Err(e) => panic!("{e:?}")
+        };
+
         let v = y as f32 / height as f32;
 
         for (x, pix) in line.chunks_exact_mut(3).enumerate() {
@@ -148,9 +159,8 @@ fn main() -> io::Result<()> {
     let mut config = Config::testing();
 
     // Cornell Box
-    /*
-    config.resolution = (128, 128);
-    config.samples_per_pixel = 8;
+    config.resolution = (256, 256);
+    config.samples_per_pixel = 4096;
     config.parallel = true;
 
     // Setup Camera
@@ -162,12 +172,12 @@ fn main() -> io::Result<()> {
     let fov = 30.0;
 
     let model_fn = "res/cornell-box.obj";
-    */
+   
 
     // Audi
-    config.resolution = (256, 256);
+    /* config.resolution = (256, 256);
     config.samples_per_pixel = 4;
-    config.parallel = true;
+    config.parallel = false;
 
     // Setup Camera
     let look_from = Vec3::new(5.5, 2.0, 10.25);
@@ -177,7 +187,7 @@ fn main() -> io::Result<()> {
     let aperture = 0.0;
     let fov = 35.0;
 
-    let model_fn = "res/Audi_R8.obj";
+    let model_fn = "res/Audi_R8.obj"; */
 
     let camera = Camera::with_config_aspect(
         look_from,
@@ -213,7 +223,7 @@ fn main() -> io::Result<()> {
     save_image(&filename, &mut buf, scene.config.resolution)
 }
 
-// #[bench]
+#[bench]
 fn bench_cornell_box(b: &mut Bencher) {
     let scene = Scene::<Slow<Model>>::load_bench("res/cornell-box.obj");
     let (width, height) = scene.config.resolution;

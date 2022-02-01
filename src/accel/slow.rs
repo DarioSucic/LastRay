@@ -12,3 +12,5 @@ impl<T: Intersectable> Intersectable for Slow<T> {
             .min_by(|a, b| a.t.partial_cmp(&b.t).unwrap())
     }
 }
+
+// (W * H) * S * O 
