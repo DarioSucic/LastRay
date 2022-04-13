@@ -15,7 +15,7 @@ pub enum MaterialType {
     Receiver(Box<dyn Material + Send + Sync>),
 }
 pub trait Material {
-    fn scatter(&self, ray: &Ray, hit: &Hit, rng: &mut Xoshiro256PlusPlus) -> Option<(Vec3, Ray)>;
+    fn scatter(&self, ray: &Ray, hit: &Hit, rng: &mut WyRand) -> Option<(Vec3, Ray)>;
 }
 
 impl dyn Material {

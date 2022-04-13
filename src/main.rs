@@ -7,7 +7,8 @@ use std::intrinsics::{likely, unlikely};
 use std::sync::Mutex;
 
 extern crate test;
-use rand_xoshiro::{Xoshiro256PlusPlus};
+
+use nanorand::{WyRand, Rng, SeedableRng};
 #[allow(unused)]
 use test::{black_box, Bencher};
 
@@ -26,7 +27,6 @@ use scene::*;
 use std::f32::{consts::PI, INFINITY as INF};
 use std::io;
 
-use rand::{self, prelude::*};
 use rayon::prelude::*;
 use write_png::{write_png, ColorType};
 
@@ -41,7 +41,7 @@ fn save_image(filename: &str, data: &[f32], res: (usize, usize)) -> io::Result<(
         .flatten()
         .copied()
         .collect();
-    write_png(filename, res.0, res.1, ColorType::RGB, data)
+    write_png(filename, res.0, res.1, ColorType::Rgb, data)
 }
 
 fn convolution(data: &mut [f32], dim: (usize, usize), kernel: &[f32], kernel_dim: (usize, usize)) {
@@ -85,7 +85,7 @@ pub fn uniform_sample_sphere(samples: &(f32, f32)) -> Vec3 {
     Vec3::new(pcos * r, psin * r, z)
 }
 
-fn ray_color<T: Intersectable>(ray: &Ray, accel: &T, rng: &mut Xoshiro256PlusPlus, depth: usize) -> Vec3 {
+fn ray_color<T: Intersectable>(ray: &Ray, accel: &T, rng: &mut WyRand, depth: usize) -> Vec3 {
     if depth < 1024*16 {
         if let Some(hit) = accel.intersect(ray, 1e-3, 1e6) {
             match hit.material {
@@ -112,19 +112,9 @@ fn trace_scene<I: Intersectable + Send + Sync>(scene: &Scene<I>, buf: &mut [f32]
     } = scene;
     let (width, height) = config.resolution;
 
-    let base_rng = Mutex::new(Xoshiro256PlusPlus::seed_from_u64(0));
-    
     let f = |(y, line): (usize, &mut [f32])| {
 
-        let mut rng;
-        match base_rng.lock() {
-            Ok(mut base_rng_mg) => {
-                rng = base_rng_mg.clone();
-                base_rng_mg.jump();
-            },
-            Err(e) => panic!("{e:?}")
-        };
-
+        let mut rng = WyRand::new();
         let v = y as f32 / height as f32;
 
         for (x, pix) in line.chunks_exact_mut(3).enumerate() {
@@ -132,7 +122,8 @@ fn trace_scene<I: Intersectable + Send + Sync>(scene: &Scene<I>, buf: &mut [f32]
             let mut color = Vec3::zero();
 
             for _ in 0..config.samples_per_pixel {
-                let (dx, dy) = rng.gen::<(f32, f32)>();
+                let dx: f32 = rng.generate();
+                let dy: f32 = rng.generate();
 
                 let u = u + dx / width as f32;
                 let v = v + dy / height as f32;
@@ -159,8 +150,8 @@ fn main() -> io::Result<()> {
     let mut config = Config::testing();
 
     // Cornell Box
-    config.resolution = (256, 256);
-    config.samples_per_pixel = 4096;
+    config.resolution = (512, 512);
+    config.samples_per_pixel = 256;
     config.parallel = true;
 
     // Setup Camera

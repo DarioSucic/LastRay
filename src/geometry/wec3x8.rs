@@ -77,18 +77,18 @@ impl Wec3x8 {
     #[inline]
     pub fn componentwise_min(&self) -> Vec3 {
         Vec3::new(
-            self.x.horizontal_min(),
-            self.y.horizontal_min(),
-            self.z.horizontal_min()
+            self.x.reduce_min(),
+            self.y.reduce_min(),
+            self.z.reduce_min()
         )
     }
 
     #[inline]
     pub fn componentwise_max(&self) -> Vec3 {
         Vec3::new(
-            self.x.horizontal_max(),
-            self.y.horizontal_max(),
-            self.z.horizontal_max()
+            self.x.reduce_max(),
+            self.y.reduce_max(),
+            self.z.reduce_max()
         )
     }
 }

@@ -22,7 +22,7 @@ impl Dielectric {
 }
 
 impl Material for Dielectric {
-    fn scatter(&self, ray: &Ray, hit: &Hit, rng: &mut Xoshiro256PlusPlus) -> Option<(Vec3, Ray)> {
+    fn scatter(&self, ray: &Ray, hit: &Hit, rng: &mut WyRand) -> Option<(Vec3, Ray)> {
         let refractive_ratio = if hit.front_face {
             1.0 / self.refractive_index
         } else {
@@ -37,7 +37,7 @@ impl Material for Dielectric {
 
         let direction;
 
-        if refractive_ratio * sin_theta > 0.999 || rng.gen::<f32>() < reflect_prob {
+        if refractive_ratio * sin_theta > 0.999 || rng.generate::<f32>() < reflect_prob {
             let reflected = unit_dir.reflected(hit.normal);
             direction = reflected;
         } else {
@@ -45,7 +45,7 @@ impl Material for Dielectric {
             direction = refracted;
         };
 
-        let sample = rng.gen::<(f32, f32)>();
+        let sample = (rng.generate::<f32>(), rng.generate::<f32>());
         let sphere_sample = uniform_sample_sphere(&sample);
 
         let direction = direction + sphere_sample * self.fuzziness;

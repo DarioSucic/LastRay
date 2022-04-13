@@ -5,4 +5,4 @@ authors = ["Dario Sucic <ds@vitalthings.com>"]
 edition = "2018"
 
 [dependencies]
-png = "*"
+png = "0.17.5"

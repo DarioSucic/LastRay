@@ -5,8 +5,8 @@ pub struct Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, _ray: &Ray, hit: &Hit, rng: &mut Xoshiro256PlusPlus) -> Option<(Vec3, Ray)> {
-        let sample = rng.gen::<(f32, f32)>();
+    fn scatter(&self, _ray: &Ray, hit: &Hit, rng: &mut WyRand) -> Option<(Vec3, Ray)> {
+        let sample = (rng.generate::<f32>(), rng.generate::<f32>());
         let direction = hit.normal + uniform_sample_sphere(&sample);
         let inv_direction = Vec3::one() / direction;
     
